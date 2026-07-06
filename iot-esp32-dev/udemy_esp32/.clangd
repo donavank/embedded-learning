@@ -1,0 +1,10 @@
+CompileFlags:
+    Remove:
+      - -fno-shrink-wrap
+      - -mlongcalls
+      - -mtext-section-literals
+      - -fstrict-volatile-bitfields
+      - -fno-tree-switch-conversion
+      - -fno-malloc-dce
+      - -fzero-init-padding-bits
+      - -fzero-init-padding-bits=all
