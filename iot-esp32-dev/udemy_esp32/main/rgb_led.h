@@ -37,4 +37,13 @@ void rgb_led_http_server_started(void);
  */
 void rgb_led_wifi_connected(void);
 
+/*
+ * Color to indicate wifi device connected
+ */
+void rgb_led_ap_connected(void);
+
+/*
+ * Color to indicate wifi device disconnected */
+void rgb_led_ap_disconnected(void);
+
 #endif /* MAIN_RGB_LED_H_ */

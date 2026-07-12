@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
+#include "http_server.h"
 #include "lwip/netdb.h"
 #include "portmacro.h"
 #include "rgb_led.h"
@@ -39,11 +40,15 @@ static void wifi_app_event_handler(void *arg, esp_event_base_t event_base,
     case WIFI_EVENT_AP_STOP:
       ESP_LOGI(TAG, "WIFI_EVENT_AP_STOP");
       break;
-    case WIFI_EVENT_AP_STACONNECTED:
-      ESP_LOGI(TAG, "WIFI_EVENT_AP_CONNECTED");
+    case WIFI_EVENT_AP_STACONNECTED: // AP STA CONNECTED occurs when a station
+                                     // connects to the AP (which in AP mode is
+                                     // the ESP32)
+      ESP_LOGI(TAG, "WIFI_EVENT_AP_STACONNECTED");
+      rgb_led_ap_connected();
       break;
     case WIFI_EVENT_AP_STADISCONNECTED:
-      ESP_LOGI(TAG, "WIFI_EVENT_AP_DISCONNECTED");
+      ESP_LOGI(TAG, "WIFI_EVENT_AP_STADISCONNECTED");
+      rgb_led_ap_disconnected();
       break;
     case WIFI_EVENT_STA_START:
       ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
@@ -172,7 +177,7 @@ static void wifi_app_task(void *pvParameters) {
       switch (msg.msgId) {
       case WIFI_APP_MSG_START_HTTP_SERVER:
         ESP_LOGI(TAG, "WIFI_APP_MSG_START_HTTP_SERVER");
-        // http_server_start();
+        http_server_start();
         rgb_led_http_server_started();
         break;
       case WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER:
