@@ -216,8 +216,8 @@ int readDHT() {
       bitInx--;
   }
 
-  ESP_LOGI(TAG, "Response = %d", responseLow);
-  ESP_LOGI(TAG, "Response = %d", responseHigh);
+  // ESP_LOGI(TAG, "Response = %d", responseLow);
+  // ESP_LOGI(TAG, "Response = %d", responseHigh);
 
   // == get humidity from Data[0] and Data[1] ==========================
   // DHT11: byte 0 = integer part, byte 1 = decimal part (tenths)

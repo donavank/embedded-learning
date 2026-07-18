@@ -9,6 +9,7 @@ var otaTimerVar =  null;
  */
 $(document).ready(function(){
 	getUpdateStatus();
+  startDHTSensorInterval();
 });   
 
 /**
@@ -116,4 +117,19 @@ function otaRebootTimer()
     }
 }
 
+/**
+ * Gets DHT temp and humidity values for display on the web page.
+ */
+function getDHTJson() {
+  $.getJSON('/dht.json', function(data) {
+    $("#temperature_reading").text(data["temp"]);
+    $("#humidity_reading").text(data["humidity"]);
+  });
+}
 
+/**
+ * Starts the polling for DHT sensor data
+*/
+function startDHTSensorInterval() {
+  setInterval(getDHTJson, 5000);
+}

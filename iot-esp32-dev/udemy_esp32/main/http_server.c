@@ -3,6 +3,7 @@
  */
 
 #include "http_server.h"
+#include "DHT11.h"
 #include "esp_err.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
@@ -268,6 +269,22 @@ static esp_err_t http_server_ota_status_handler(httpd_req_t *req) {
 }
 
 /**
+ * @param req HTTP request for which the URI needs to be handled
+ * @return ESP_OK
+ */
+static esp_err_t http_server_dht_json_handler(httpd_req_t *req) {
+  char dhtJSON[100];
+
+  ESP_LOGI(TAG, "DHT data requested");
+
+  sprintf(dhtJSON, "{\"temp\":%.1f,\"humidity\":%.1f}", getTemperature(),
+          getHumidity());
+  httpd_resp_set_type(req, "application/json");
+  httpd_resp_send(req, dhtJSON, strlen(dhtJSON));
+  return ESP_OK;
+}
+
+/**
  * Sets up the default HTTP server configuration
  * @return HTTP server instance handle if successful
  *         NULL otherwise
@@ -352,6 +369,14 @@ static httpd_handle_t http_server_configure(void) {
         .user_ctx = NULL,
     };
     httpd_register_uri_handler(http_server_handle, &ota_update);
+
+    httpd_uri_t dht_json = {
+        .uri = "/dht.json",
+        .method = HTTP_GET,
+        .handler = http_server_dht_json_handler,
+        .user_ctx = NULL,
+    };
+    httpd_register_uri_handler(http_server_handle, &dht_json);
 
     return http_server_handle;
   }
