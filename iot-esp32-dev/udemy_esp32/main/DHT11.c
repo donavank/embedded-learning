@@ -254,13 +254,13 @@ static void dht_task(void *pvParameters) {
   setDHTgpio(DHT_GPIO);
   // Do some stuff here maybe?
   for (;;) {
-    printf("Reading DHT sensor...\n");
+    // printf("Reading DHT sensor...\n");
     int ret = readDHT();
 
     errorHandler(ret);
 
-    printf("Humidity: %.1f\n", getHumidity());
-    printf("Temp: %.1f\n", getTemperature());
+    // printf("Humidity: %.1f\n", getHumidity());
+    // printf("Temp: %.1f\n", getTemperature());
     vTaskDelay(2000 / portTICK_PERIOD_MS);
   }
 }

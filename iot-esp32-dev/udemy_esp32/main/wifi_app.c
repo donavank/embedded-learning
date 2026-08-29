@@ -19,6 +19,10 @@ static const char TAG[] = "wifi_app";
 
 static QueueHandle_t wifi_app_queue_handle;
 
+static int g_wifi_app_connect_retry_counter = 0;
+
+wifi_config_t *wifi_config = NULL;
+
 esp_netif_t *esp_netif_sta = NULL;
 esp_netif_t *esp_netif_ap = NULL;
 
@@ -61,6 +65,24 @@ static void wifi_app_event_handler(void *arg, esp_event_base_t event_base,
       break;
     case WIFI_EVENT_STA_DISCONNECTED:
       ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED");
+
+      // Do I need to explicitly cast this pointer to the appropriate type?
+      // Apparently some idf headers (and c++) require it
+      wifi_event_sta_disconnected_t *disconnected_event =
+          malloc(sizeof(wifi_event_sta_disconnected_t));
+      *disconnected_event = *((wifi_event_sta_disconnected_t *)event_data);
+
+      printf("WIFI_EVENT_STA_DISCONNECTED: reason->%d",
+             disconnected_event->reason);
+
+      free(disconnected_event);
+
+      if (g_wifi_app_connect_retry_counter < MAX_CONNECTION_RETRIES) {
+        esp_wifi_connect();
+      } else {
+        wifi_app_send_message(WIFI_APP_MSG_STA_DISCONNECTED);
+      }
+
       break;
     default:
       break;
@@ -69,6 +91,7 @@ static void wifi_app_event_handler(void *arg, esp_event_base_t event_base,
     switch (event_id) {
     case IP_EVENT_STA_GOT_IP:
       ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
+      wifi_app_send_message(WIFI_APP_MSG_STA_CONNECTED_GOT_IP);
       break;
     default:
       break;
@@ -152,6 +175,14 @@ static void wifi_app_soft_ap_config(void) {
 }
 
 /**
+ * Connects to the access point for the configured wifi_config_t
+ */
+static void wifi_app_connect_sta(void) {
+  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, wifi_app_get_wifi_config()));
+  ESP_ERROR_CHECK(esp_wifi_connect());
+}
+
+/**
  * Main task for the WiFi application
  * @param pvParameters parameter which can be passed to the task
  */
@@ -182,10 +213,20 @@ static void wifi_app_task(void *pvParameters) {
         break;
       case WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER:
         ESP_LOGI(TAG, "WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER");
+
+        wifi_app_connect_sta();
+
+        g_wifi_app_connect_retry_counter = 0;
+
+        http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_INIT);
         break;
       case WIFI_APP_MSG_STA_CONNECTED_GOT_IP:
         ESP_LOGI(TAG, "WIFI_APP_MSG_STA_CONNECTED_GOT_IP");
+        http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_SUCCESS);
         rgb_led_wifi_connected();
+        break;
+      case WIFI_APP_MSG_STA_DISCONNECTED:
+        http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_FAILED);
         break;
       default:
         break;
@@ -193,6 +234,8 @@ static void wifi_app_task(void *pvParameters) {
     }
   }
 }
+
+wifi_config_t *wifi_app_get_wifi_config(void) { return wifi_config; }
 
 BaseType_t wifi_app_send_message(wifi_app_message_e msgId) {
   wifi_app_queue_message_t msg;
@@ -202,6 +245,10 @@ BaseType_t wifi_app_send_message(wifi_app_message_e msgId) {
 
 void wifi_app_start(void) {
   ESP_LOGI(TAG, "Starting WiFi application...");
+
+  // Initialize WiFi config
+  wifi_config = malloc(sizeof(wifi_config_t));
+  memset(wifi_config, 0x00, sizeof(wifi_config_t));
 
   // Indicate status on LED
   rgb_led_wifi_app_started();

@@ -3,6 +3,7 @@
  */
 var seconds 	= null;
 var otaTimerVar =  null;
+var wifiConnectInterval = null;
 
 /**
  * Initialize functions here.
@@ -10,6 +11,9 @@ var otaTimerVar =  null;
 $(document).ready(function(){
 	getUpdateStatus();
   startDHTSensorInterval();
+  $("#connect_wifi").on("click", function() {
+    checkCredentials();
+  });
 });   
 
 /**
@@ -132,4 +136,100 @@ function getDHTJson() {
 */
 function startDHTSensorInterval() {
   setInterval(getDHTJson, 5000);
+}
+
+function stopWifiConnectStatusInterval() {
+  if (wifiConnectInterval != null) {
+    clearInterval(wifiConnectInterval);
+    wifiConnectInterval = null;
+  }
+}
+
+function getWifiConnectStatus() {
+  console.log('Getting /wifiConnectStatus...');
+  var xhr = new XMLHttpRequest();
+  var requestUrl = '/wifiConnectStatus';
+  xhr.open('POST', requestUrl, false);
+  xhr.send('wifi_connect_status');
+
+  if (xhr.readyState == 4 && xhr.status == 200) {
+    var response = JSON.parse(xhr.responseText);
+
+    document.getElementById("wifi_connect_status").innerHTML = "Connecting...";
+    
+    if (response.wifi_connect_status == 1) {
+      document.getElementById("wifi_connect_status").innerHTML = "<h4 class='rd'>Failed to connect. Please check your credentials.</h4>";
+    } else if (response.wifi_connect_status == 2) {
+      document.getElementById("wifi_connect_status").innerHTML = "<h4 class='gr'>Connection success!</h4>";
+      stopWifiConnectStatusInterval();
+    }
+  }
+}
+
+function startWifiConnectStatusInterval() {
+  wifiConnectInterval = setInterval(getWifiConnectStatus, 2800);
+}
+/**
+ * Calls wifi connect methods
+ * and triggers the status check interval
+ */
+function connectWifi() {
+  ssid = $("#connect_ssid").val();
+  pass = $("#connect_pass").val();
+
+  console.log(`Connecting to wifi with credentials:\n${ssid}\n${pass}...`);
+  $.ajax({
+    url: '/wifiConnect.json',
+    dataType: 'json',
+    method: 'POST',
+    cache: false,
+    headers: { 'my-connect-ssid': ssid, 'my-connect-pwd': pass },
+    data: { 'timestamp': Date.now() },
+  });
+
+  startWifiConnectStatusInterval();
+}
+
+/**
+ * Checks credentials inputs and tries to connect
+ */
+function checkCredentials() {
+  console.log("Checking credentials...");
+  errorsList = "";
+  areCredsOkay = true;
+
+  ssid = $("#connect_ssid").val();
+  pass = $("#connect_pass").val();
+
+  if (ssid == "") {
+    errorsList += "<h4>SSID cannot be blank.</h4>";
+    areCredsOkay = false;
+  }
+
+  if (pass == "") {
+    errorsList += "<h4>Password cannot be blank.</h4>";
+    areCredsOkay = false;
+  }
+
+  if (areCredsOkay == false) {
+    console.log("Creds not okay.");
+    $("#wifi_connect_credentials_errors").html(errorsList);
+  } else {
+    console.log("Creds okay");
+    $("#wifi_connect_credentials_errors").html("");
+    connectWifi();
+  }
+}
+
+
+function showPassword() {
+	var x = document.getElementById("connect_pass");
+	if (x.type === "password")
+	{
+		x.type = "text";
+	}
+	else
+	{
+		x.type = "password";
+	}
 }

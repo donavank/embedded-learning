@@ -7,6 +7,7 @@
 #define MAIN_WIFI_APP_H_
 
 #include "esp_netif.h"
+#include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 
 // WIFI application settings
@@ -61,5 +62,10 @@ BaseType_t wifi_app_send_message(wifi_app_message_e msgId);
  * Starts the WiFi RTOS task
  */
 void wifi_app_start(void);
+
+/*
+ * Returns a pointer to the wifi_config used by the app
+ */
+wifi_config_t *wifi_app_get_wifi_config(void);
 
 #endif /* MAIN_WIFI_APP_H_ */

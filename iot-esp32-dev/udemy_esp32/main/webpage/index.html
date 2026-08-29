@@ -10,25 +10,25 @@
 		<title>ESP32 Udemy Course</title>
 	</head>
 	<body>
-	<header>
-		<h1>ESP32 Application Development</h1>
-	</header>
-		
-	<div id="OTA">
-	<h2>ESP32 Firmware Update</h2>
-		<label id="latest_firmware_label">Latest Firmware: </label>
-		<div id="latest_firmware"></div> 
-		<input type="file" id="selected_file" accept=".bin" style="display: none;" onchange="getFileInfo()" />
-		<div class="buttons">
-			<input type="button" value="Select File" onclick="document.getElementById('selected_file').click();" />
-			<input type="button" value="Update Firmware" onclick="updateFirmware()" />
-		</div>
-		<h4 id="file_info"></h4>	
-		<h4 id="ota_update_status"></h4>
-	</div>
-	<hr>
-		
-  <div id="dht">
+    <header>
+      <h1>ESP32 Application Development</h1>
+    </header>
+
+    <div id="OTA">
+    <h2>ESP32 Firmware Update</h2>
+      <label id="latest_firmware_label">Latest Firmware: </label>
+      <div id="latest_firmware"></div> 
+      <input type="file" id="selected_file" accept=".bin" style="display: none;" onchange="getFileInfo()" />
+      <div class="buttons">
+        <input type="button" value="Select File" onclick="document.getElementById('selected_file').click();" />
+        <input type="button" value="Update Firmware" onclick="updateFirmware()" />
+      </div>
+      <h4 id="file_info"></h4>	
+      <h4 id="ota_update_status"></h4>
+    </div>
+    <hr>
+
+    <div id="dht">
       <h2>DHT11 Sensor</h2>
       <label for="temperature_reading">Temperature: </label>
       <div id="temperature_reading"></div>
@@ -36,5 +36,20 @@
       <div id="humidity_reading"></div>
     </div>
     <hr>
+
+    <div id="wifi_connect">
+      <h2>ESP32 WiFi Connect</h2>
+      <section>
+        <input id="connect_ssid" maxLength=32 type="text" placeholder="SSID" value="" >
+        <input id="connect_pass" maxLength=64 type="password" placeholder="password" value="" >
+        <input type="checkbox" onClick="showPassword()" >Show Password
+      </section>
+      <div class="buttons">
+        <input id="connect_wifi" type="button" value="Connect" />
+      </div>
+      <div id="wifi_connect_credentials_erros"></div>
+      <h4 id="wifi_connect_status"></h4>
+    </div>
+
 	</body>
 <html>
