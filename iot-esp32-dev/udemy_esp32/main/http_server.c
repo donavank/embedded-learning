@@ -349,7 +349,7 @@ static esp_err_t http_server_wifi_connect_status_handler(httpd_req_t *req) {
           g_http_server_wifi_connect_status);
 
   httpd_resp_set_type(req, "application/json");
-  httpd_resp_send(req, json, sizeof(json));
+  httpd_resp_send(req, json, strlen(json));
 
   return ESP_OK;
 }

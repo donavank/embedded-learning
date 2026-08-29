@@ -25,10 +25,11 @@ typedef enum http_server_message {
 } http_server_message_e;
 
 typedef enum http_server_connect_status {
-  HTTP_SERVER_CONNECT_STATUS_CONNECTING = 0,
+  NONE = 0,
+  HTTP_SERVER_CONNECT_STATUS_CONNECTING,
   HTTP_SERVER_CONNECT_STATUS_FAILED,
   HTTP_SERVER_CONNECT_STATUS_SUCCESS,
-  NONE,
+  HTTP_SERVER_CONNECT_STATUS_DISCONNECTED,
 } http_server_connect_status_e;
 
 /**
