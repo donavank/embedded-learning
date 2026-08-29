@@ -386,6 +386,13 @@ static esp_err_t http_server_wifi_connect_info_handler(httpd_req_t *req) {
 
   return ESP_OK;
 }
+
+static esp_err_t http_server_wifi_disconnect_handler(httpd_req_t *reg) {
+  ESP_LOGI(TAG, "/wifiDisconnect.json requested");
+  wifi_app_send_message(WIFI_APP_MSG_USER_REQUESTED_STA_DISCONNECT);
+  return ESP_OK;
+}
+
 /**
  * Sets up the default HTTP server configuration
  * @return HTTP server instance handle if successful
@@ -503,6 +510,14 @@ static httpd_handle_t http_server_configure(void) {
         .user_ctx = NULL,
     };
     httpd_register_uri_handler(http_server_handle, &wifi_connect_info);
+
+    httpd_uri_t wifi_disconnect = {
+        .uri = "/wifiDisconnect.json",
+        .method = HTTP_DELETE,
+        .handler = http_server_wifi_disconnect_handler,
+        .user_ctx = NULL,
+    };
+    httpd_register_uri_handler(http_server_handle, &wifi_disconnect);
 
     return http_server_handle;
   }

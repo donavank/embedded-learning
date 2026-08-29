@@ -15,6 +15,9 @@ $(document).ready(function(){
   $("#connect_wifi").on("click", function() {
     checkCredentials();
   });
+  $("#disconnect_wifi").on("click", function() {
+    disconnectWifi();
+  });
 });   
 
 /**
@@ -255,4 +258,16 @@ function getConnectInfo() {
 
     document.getElementById("disconnect_wifi").style.display = "block";
   });
+}
+
+function disconnectWifi() {
+  $.ajax({
+    url: "/wifiDisconnect.json",
+    dataType: "json",
+    method: "DELETE",
+    cache: false,
+    data: { "timestamp": Date.now() }
+  });
+
+  setTimeout(() => location.reload(true), 2000);
 }
