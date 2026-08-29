@@ -11,6 +11,7 @@ var wifiConnectInterval = null;
 $(document).ready(function(){
 	getUpdateStatus();
   startDHTSensorInterval();
+  getConnectInfo();
   $("#connect_wifi").on("click", function() {
     checkCredentials();
   });
@@ -152,17 +153,21 @@ function getWifiConnectStatus() {
   xhr.open('POST', requestUrl, false);
   xhr.send('wifi_connect_status');
 
+  console.log('Request sent...');
   if (xhr.readyState == 4 && xhr.status == 200) {
     var response = JSON.parse(xhr.responseText);
 
     document.getElementById("wifi_connect_status").innerHTML = "Connecting...";
-    
-    if (response.wifi_connect_status == 1) {
+ 
+    if (response.wifi_connect_status == 2) {
       document.getElementById("wifi_connect_status").innerHTML = "<h4 class='rd'>Failed to connect. Please check your credentials.</h4>";
-    } else if (response.wifi_connect_status == 2) {
+    } else if (response.wifi_connect_status == 3) {
       document.getElementById("wifi_connect_status").innerHTML = "<h4 class='gr'>Connection success!</h4>";
       stopWifiConnectStatusInterval();
+      getConnectInfo();
     }
+  } else {
+    console.log('Status Check skipped');
   }
 }
 
@@ -232,4 +237,22 @@ function showPassword() {
 	{
 		x.type = "password";
 	}
+}
+
+function getConnectInfo() {
+  $.getJSON("/wifiConnectInfo.json", function(data) {
+    $("#connected_ap_label").html("Connected to: ");
+    $("#connected_ap").text(data["ap"]);
+
+    $("#ip_address_label").html("IP Address: ");
+    $("#wifi_connect_ip").text(data["ip"]);
+
+    $("#netmask_label").html("Netmask: ");
+    $("#wifi_connect_netmask").text(data["netmask"]);
+
+    $("#gateway_label").html("Gateway: ");
+    $("#wifi_connect_gw").text(data["gw"]);
+
+    document.getElementById("disconnect_wifi").style.display = "block";
+  });
 }
