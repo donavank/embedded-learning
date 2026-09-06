@@ -27,6 +27,7 @@ static EventGroupHandle_t wifi_app_event_group;
 const int WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT = BIT0;
 const int WIFI_APP_CONNECTING_FROM_HTTP_SERVER_BIT = BIT1;
 const int WIFI_APP_USER_REQUESTED_DISCONNECT = BIT2;
+const int WIFI_APP_CONNECTED = BIT3;
 
 wifi_config_t *wifi_config = NULL;
 
@@ -239,6 +240,7 @@ static void wifi_app_task(void *pvParameters) {
         break;
       case WIFI_APP_MSG_STA_CONNECTED_GOT_IP:
         ESP_LOGI(TAG, "WIFI_APP_MSG_STA_CONNECTED_GOT_IP");
+        xEventGroupSetBits(wifi_app_event_group, WIFI_APP_CONNECTED);
         http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_SUCCESS);
         eventBits = xEventGroupGetBits(wifi_app_event_group);
         if (eventBits & WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT) {
@@ -257,9 +259,8 @@ static void wifi_app_task(void *pvParameters) {
         ESP_LOGI(TAG, "WIFI_APP_MSG_STA_DISCONNECTED");
         eventBits = xEventGroupGetBits(wifi_app_event_group);
         if (eventBits & WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT) {
-          ESP_LOGI(
-              TAG,
-              "WIFI_APP_MSG_STA_DISCONNECTED: ATTEMPT USING SAVED CREDENTIALS");
+          ESP_LOGI(TAG, "WIFI_APP_MSG_STA_DISCONNECTED: ATTEMPT USING SAVED "
+                        "CREDENTIALS");
           xEventGroupClearBits(wifi_app_event_group,
                                WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT);
           app_nvs_clear_sta_creds();
@@ -278,15 +279,21 @@ static void wifi_app_task(void *pvParameters) {
           ESP_LOGI(TAG, "WIFI_APP_MSG_STA_DISCONNECTED: ATTEMPT FAILED< CHECK "
                         "WIFI ACCESS POINT AVAILABLITY");
         }
+        if (eventBits & WIFI_APP_CONNECTED) {
+          xEventGroupClearBits(wifi_app_event_group, WIFI_APP_CONNECTED);
+        }
         break;
       case WIFI_APP_MSG_USER_REQUESTED_STA_DISCONNECT:
         ESP_LOGI(TAG, "WIFI_APP_MSG_USER_REQUESTED_STA_DISCONNECT");
-        xEventGroupSetBits(wifi_app_event_group,
-                           WIFI_APP_USER_REQUESTED_DISCONNECT);
-        g_wifi_app_connect_retry_counter = MAX_CONNECTION_RETRIES;
-        ESP_ERROR_CHECK(esp_wifi_disconnect());
-        app_nvs_clear_sta_creds();
-        rgb_led_wifi_app_started();
+        eventBits = xEventGroupGetBits(wifi_app_event_group);
+        if (eventBits & WIFI_APP_CONNECTED) {
+          xEventGroupSetBits(wifi_app_event_group,
+                             WIFI_APP_USER_REQUESTED_DISCONNECT);
+          g_wifi_app_connect_retry_counter = MAX_CONNECTION_RETRIES;
+          ESP_ERROR_CHECK(esp_wifi_disconnect());
+          app_nvs_clear_sta_creds();
+          rgb_led_wifi_app_started();
+        }
         break;
       default:
         break;

@@ -5,6 +5,7 @@
 #include "DHT11.h"
 #include "nvs_flash.h"
 #include "wifi_app.h"
+#include "wifi_reset_button.h"
 
 void app_main(void) {
   esp_err_t ret = nvs_flash_init();
@@ -18,5 +19,6 @@ void app_main(void) {
   }
 
   wifi_app_start();
+  wifi_reset_button_config();
   dht_task_start();
 }
