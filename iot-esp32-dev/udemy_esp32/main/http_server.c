@@ -91,6 +91,11 @@ static void http_server_monitor(void *parameters) {
         ESP_LOGI(TAG, "HTTP_MSG_WIFI_CONNECT_FAILED");
         g_http_server_wifi_connect_status = HTTP_SERVER_CONNECT_STATUS_FAILED;
         break;
+      case HTTP_MSG_WIFI_USER_DISCONNECTED:
+        ESP_LOGI(TAG, "HTTP_MSG_WIFI_USER_DISCONNECTED");
+        g_http_server_wifi_connect_status =
+            HTTP_SERVER_CONNECT_STATUS_DISCONNECTED;
+        break;
       case HTTP_MSG_WIFI_OTA_UPDATE_SUCCESSFUL:
         ESP_LOGI(TAG, "HTTP_MSG_WIFI_OTA_UPDATE_SUCCESSFUL");
         g_fw_update_status = OTA_UPDATE_SUCCESSFUL;
