@@ -8,9 +8,9 @@
 #include "wifi_app.h"
 #include "wifi_reset_button.h"
 
-int aws_iot_demo_main( int argc, char ** argv );
+int aws_iot_demo_main(int argc, char **argv);
 
-static void wifi_connected_callback() { 
+static void wifi_connected_callback() {
   sntp_time_sync_task_start();
   aws_iot_demo_main(0, NULL);
 }

@@ -75,4 +75,6 @@ void wifi_app_start(void);
  */
 wifi_config_t *wifi_app_get_wifi_config(void);
 
+int wifi_app_get_rssi(void);
+
 #endif /* MAIN_WIFI_APP_H_ */

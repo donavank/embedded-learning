@@ -317,6 +317,14 @@ static void wifi_app_task(void *pvParameters) {
 
 wifi_config_t *wifi_app_get_wifi_config(void) { return wifi_config; }
 
+int wifi_app_get_rssi(void) {
+  wifi_ap_record_t wifi_info;
+  if (esp_wifi_sta_get_ap_info(&wifi_info) == ESP_OK) {
+    return wifi_info.rssi;
+  }
+  return 1000;
+}
+
 BaseType_t wifi_app_send_message(wifi_app_message_e msgId) {
   wifi_app_queue_message_t msg;
   msg.msgId = msgId;

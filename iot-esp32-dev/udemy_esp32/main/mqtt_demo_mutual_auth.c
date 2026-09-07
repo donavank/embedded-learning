@@ -76,6 +76,9 @@
 /* Clock for timer. */
 #include "clock.h"
 
+#include "DHT11.h"
+#include "wifi_app.h"
+
 #ifdef CONFIG_EXAMPLE_USE_ESP_SECURE_CERT_MGR
 #include "esp_secure_cert_read.h"
 #endif
@@ -1329,6 +1332,11 @@ static int unsubscribeFromTopic(MQTTContext_t *pMqttContext) {
 /*-----------------------------------------------------------*/
 
 static int publishToTopic(MQTTContext_t *pMqttContext) {
+  char cPayload[50] = {0};
+
+  sprintf(cPayload, "rssi : %d, temp : %.1f, humidity : %.1f",
+          wifi_app_get_rssi(), getTemperature(), getHumidity());
+
   int returnStatus = EXIT_SUCCESS;
   MQTTStatus_t mqttStatus = MQTTSuccess;
   uint8_t publishIndex = MAX_OUTGOING_PUBLISHES;
@@ -1350,10 +1358,9 @@ static int publishToTopic(MQTTContext_t *pMqttContext) {
         MQTT_EXAMPLE_TOPIC;
     outgoingPublishPackets[publishIndex].pubInfo.topicNameLength =
         MQTT_EXAMPLE_TOPIC_LENGTH;
-    outgoingPublishPackets[publishIndex].pubInfo.pPayload =
-        MQTT_EXAMPLE_MESSAGE;
+    outgoingPublishPackets[publishIndex].pubInfo.pPayload = cPayload;
     outgoingPublishPackets[publishIndex].pubInfo.payloadLength =
-        MQTT_EXAMPLE_MESSAGE_LENGTH;
+        strlen(cPayload);
 
     /* Get a new packet id. */
     outgoingPublishPackets[publishIndex].packetId =
