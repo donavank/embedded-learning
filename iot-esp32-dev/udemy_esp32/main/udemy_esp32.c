@@ -2,12 +2,18 @@
 #include <freertos/task.h>
 
 #include "DHT11.h"
+#include "demo_config.h"
 #include "nvs_flash.h"
 #include "sntp_time_sync.h"
 #include "wifi_app.h"
 #include "wifi_reset_button.h"
 
-static void wifi_connected_callback() { sntp_time_sync_task_start(); }
+int aws_iot_demo_main( int argc, char ** argv );
+
+static void wifi_connected_callback() { 
+  sntp_time_sync_task_start();
+  aws_iot_demo_main(0, NULL);
+}
 
 void app_main(void) {
   esp_err_t ret = nvs_flash_init();
