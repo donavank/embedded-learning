@@ -14,6 +14,7 @@
 #include "esp_wifi_types_generic.h"
 #include "freertos/idf_additions.h"
 #include "http_parser.h"
+#include "sntp_time_sync.h"
 #include "sys/param.h"
 #include "tasks_common.h"
 #include "wifi_app.h"
@@ -23,6 +24,8 @@ static const char TAG[] = "http_server";
 static int g_http_server_wifi_connect_status = NONE;
 
 static int g_fw_update_status = OTA_UPDATE_PENDING;
+
+static bool g_time_service_started = false;
 
 static httpd_handle_t http_server_handle = NULL;
 
@@ -104,6 +107,10 @@ static void http_server_monitor(void *parameters) {
       case HTTP_MSG_WIFI_OTA_UPDATE_FAILED:
         ESP_LOGI(TAG, "HTTP_MSG_WIFI_OTA_UPDATE_FAILED");
         g_fw_update_status = OTA_UPDATE_FAILED;
+        break;
+      case HTTP_MSG_SNTP_INIT:
+        ESP_LOGI(TAG, "HTTP_MSG_SNTP_INIT");
+        g_time_service_started = true;
         break;
       default:
         break;
@@ -392,9 +399,21 @@ static esp_err_t http_server_wifi_connect_info_handler(httpd_req_t *req) {
   return ESP_OK;
 }
 
-static esp_err_t http_server_wifi_disconnect_handler(httpd_req_t *reg) {
+static esp_err_t http_server_wifi_disconnect_handler(httpd_req_t *req) {
   ESP_LOGI(TAG, "/wifiDisconnect.json requested");
   wifi_app_send_message(WIFI_APP_MSG_USER_REQUESTED_STA_DISCONNECT);
+  return ESP_OK;
+}
+
+static esp_err_t http_server_local_time_json_handler(httpd_req_t *req) {
+  char json[100] = {0};
+  if (g_time_service_started) {
+    // Although the get_time function returns a char*, it does not need to be
+    // freed because it is a pointer to a static allocated char buffer.
+    sprintf(json, "{\"time\":\"%s\"}", sntp_time_sync_get_time());
+  }
+  httpd_resp_set_type(req, "application/json");
+  httpd_resp_send(req, json, strlen(json));
   return ESP_OK;
 }
 
@@ -523,6 +542,14 @@ static httpd_handle_t http_server_configure(void) {
         .user_ctx = NULL,
     };
     httpd_register_uri_handler(http_server_handle, &wifi_disconnect);
+
+    httpd_uri_t local_time = {
+        .uri = "/localTime.json",
+        .method = HTTP_GET,
+        .handler = http_server_local_time_json_handler,
+        .user_ctx = NULL,
+    };
+    httpd_register_uri_handler(http_server_handle, &local_time);
 
     return http_server_handle;
   }

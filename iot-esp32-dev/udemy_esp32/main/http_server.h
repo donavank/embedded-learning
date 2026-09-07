@@ -23,6 +23,7 @@ typedef enum http_server_message {
   HTTP_MSG_WIFI_USER_DISCONNECTED,
   HTTP_MSG_WIFI_OTA_UPDATE_SUCCESSFUL,
   HTTP_MSG_WIFI_OTA_UPDATE_FAILED,
+  HTTP_MSG_SNTP_INIT,
 } http_server_message_e;
 
 typedef enum http_server_connect_status {

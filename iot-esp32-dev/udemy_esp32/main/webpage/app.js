@@ -12,6 +12,7 @@ $(document).ready(function(){
 	getUpdateStatus();
   startDHTSensorInterval();
   getConnectInfo();
+  startLocalTimeInterval();
   $("#connect_wifi").on("click", function() {
     checkCredentials();
   });
@@ -270,4 +271,14 @@ function disconnectWifi() {
   });
 
   setTimeout(() => location.reload(true), 2000);
+}
+
+function getLocalTime() {
+  $.getJSON('/localTime.json', function(data) {
+    $("#local_time").text(data["time"]);
+  });
+}
+
+function startLocalTimeInterval() {
+  setInterval(getLocalTime, 10000);
 }

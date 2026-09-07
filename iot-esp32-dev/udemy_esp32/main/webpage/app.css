@@ -47,6 +47,11 @@ h4 {
   color: #1d3557;
 }
 
+#time_local {
+  display:inline;
+  color: #1d3557;
+}
+
 .gr {
   color: green;
 }

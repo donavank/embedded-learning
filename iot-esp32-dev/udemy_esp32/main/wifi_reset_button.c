@@ -30,7 +30,7 @@ static void wifi_reset_button_task(void *pvParameters) {
   }
 }
 
-void wifi_reset_button_config() {
+void wifi_reset_button_config(void) {
   wifi_reset_semaphore = xSemaphoreCreateBinary();
 
   esp_rom_gpio_pad_select_gpio(WIFI_RESET_BUTTON_GPIO);

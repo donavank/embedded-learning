@@ -34,6 +34,8 @@ wifi_config_t *wifi_config = NULL;
 esp_netif_t *esp_netif_sta = NULL;
 esp_netif_t *esp_netif_ap = NULL;
 
+wifi_connected_event_callback_t wifi_connected_event_callback;
+
 /**
  * WiFi application event handler
  * @param arg data, aside from event data passed to the handler when it is
@@ -190,6 +192,16 @@ static void wifi_app_connect_sta(void) {
   ESP_ERROR_CHECK(esp_wifi_connect());
 }
 
+void wifi_app_set_connected_callback(wifi_connected_event_callback_t cb) {
+  wifi_connected_event_callback = cb;
+}
+
+void wifi_app_call_connected_callbacked() {
+  if (wifi_connected_event_callback != NULL) {
+    wifi_connected_event_callback();
+  }
+}
+
 /**
  * Main task for the WiFi application
  * @param pvParameters parameter which can be passed to the task
@@ -240,6 +252,7 @@ static void wifi_app_task(void *pvParameters) {
         break;
       case WIFI_APP_MSG_STA_CONNECTED_GOT_IP:
         ESP_LOGI(TAG, "WIFI_APP_MSG_STA_CONNECTED_GOT_IP");
+        wifi_app_call_connected_callbacked();
         xEventGroupSetBits(wifi_app_event_group, WIFI_APP_CONNECTED);
         http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_SUCCESS);
         eventBits = xEventGroupGetBits(wifi_app_event_group);

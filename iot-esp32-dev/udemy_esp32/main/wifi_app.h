@@ -29,6 +29,11 @@
 extern esp_netif_t *esp_netif_sta;
 extern esp_netif_t *esp_netif_ap;
 
+typedef void (*wifi_connected_event_callback_t)(void);
+
+void wifi_app_set_connected_callback(wifi_connected_event_callback_t cb);
+void wifi_app_wifi_call_connected_callback(void);
+
 /**
  * Message IDs for WIFI Application Task
  * @note expand based on application requirements
