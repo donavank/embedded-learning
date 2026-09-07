@@ -406,12 +406,27 @@ static esp_err_t http_server_wifi_disconnect_handler(httpd_req_t *req) {
 }
 
 static esp_err_t http_server_local_time_json_handler(httpd_req_t *req) {
+  ESP_LOGI(TAG, "/localTime.json requested");
   char json[100] = {0};
   if (g_time_service_started) {
     // Although the get_time function returns a char*, it does not need to be
     // freed because it is a pointer to a static allocated char buffer.
     sprintf(json, "{\"time\":\"%s\"}", sntp_time_sync_get_time());
   }
+  httpd_resp_set_type(req, "application/json");
+  httpd_resp_send(req, json, strlen(json));
+  return ESP_OK;
+}
+
+static esp_err_t http_server_ap_ssid_json_handler(httpd_req_t *req) {
+  ESP_LOGI(TAG, "/ap_ssid.json requested");
+  char json[50] = {0};
+
+  wifi_config_t *config = wifi_app_get_wifi_config();
+  esp_wifi_get_config(WIFI_IF_AP, config);
+  char *ssid = (char *)config->ap.ssid;
+
+  sprintf(json, "{\"ssid\":\"%s\"}", ssid);
   httpd_resp_set_type(req, "application/json");
   httpd_resp_send(req, json, strlen(json));
   return ESP_OK;
@@ -550,6 +565,14 @@ static httpd_handle_t http_server_configure(void) {
         .user_ctx = NULL,
     };
     httpd_register_uri_handler(http_server_handle, &local_time);
+
+    httpd_uri_t ap_ssid = {
+        .uri = "/ap_ssid.json",
+        .method = HTTP_GET,
+        .handler = http_server_ap_ssid_json_handler,
+        .user_ctx = NULL,
+    };
+    httpd_register_uri_handler(http_server_handle, &ap_ssid);
 
     return http_server_handle;
   }

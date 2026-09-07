@@ -9,6 +9,7 @@ var wifiConnectInterval = null;
  * Initialize functions here.
  */
 $(document).ready(function(){
+  getSSID();
 	getUpdateStatus();
   startDHTSensorInterval();
   getConnectInfo();
@@ -281,4 +282,10 @@ function getLocalTime() {
 
 function startLocalTimeInterval() {
   setInterval(getLocalTime, 10000);
+}
+
+function getSSID() {
+  $.getJSON('/ap_ssid.json', function(data) {
+    $("#ap_ssid").text(data["ssid"]);
+  });
 }
